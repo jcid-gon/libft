@@ -6,118 +6,95 @@
 /*   By: jcid-gon <jcid-gon@student.42urduliz.com>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/04 11:41:31 by jcid-gon          #+#    #+#             */
-/*   Updated: 2021/06/04 11:41:34 by jcid-gon         ###   ########.fr       */
+/*   Updated: 2021/06/07 14:14:49 by jcid-gon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-char	**ft_free (char **array)
+static char	**ft_malloc_error(char **tab)
 {
-	unsigned int	index;
+	unsigned int	i;
 
-	index = 0;
-	while (array[index])
+	i = 0;
+	while (tab[i])
 	{
-		free(array[index]);
-		index++;
+		free(tab[i]);
+		i++;
 	}
-	free(array);
+	free(tab);
 	return (NULL);
 }
 
-void	ft_fill(const char *s, char c, char **array, size_t count)
+static unsigned int	ft_get_nb_strs(char const *s, char c)
 {
-	int	y;
-	int	x;
-	int	index;
+	unsigned int	i;
+	unsigned int	nb_strs;
 
-	y = 0;
-	x = 0;
-	index = 0;
-	while (s[index] == c)
-		index++;
-	while (s[index] != '\0')
+	if (!s[0])
+		return (0);
+	i = 0;
+	nb_strs = 0;
+	while (s[i] && s[i] == c)
+		i++;
+	while (s[i])
 	{
-		if (s[index] != c)
-			array[y][x++] = s[index];
-		if (s[index] == c)
+		if (s[i] == c)
 		{
-			while (s[index + 1] == c)
-				index++;
-			array[y][x] = '\0';
-			y++;
-			x = 0;
+			nb_strs++;
+			while (s[i] && s[i] == c)
+				i++;
+			continue ;
 		}
-		index++;
+		i++;
 	}
-	if (y != 0)
-		array[count] = NULL;
+	if (s[i - 1] != c)
+		nb_strs++;
+	return (nb_strs);
 }
 
-void	ft_assing_malloc(char const *s, char c, char **array)
+static void	ft_get_next_str(char **next_str, unsigned int *next_str_len, char c)
 {
-	int	count;
-	int	y;
-	int	index;
+	unsigned int	i;
 
-	y = 0;
-	count = 0;
-	index = 0;
-	while (s[index] != '\0')
+	*next_str += *next_str_len;
+	*next_str_len = 0;
+	i = 0;
+	while (**next_str && **next_str == c)
+		(*next_str)++;
+	while ((*next_str)[i])
 	{
-		if (s[index] != c)
-			count++;
-		else if (index > 0 && s[index - 1] != c)
-		{
-			array[y] = malloc((count + 1) * sizeof(char));
-			count = 0;
-			y++;
-		}
-		index++;
+		if ((*next_str)[i] == c)
+			return ;
+		(*next_str_len)++;
+		i++;
 	}
-	if (count != 0)
-		array[y] = malloc((count + 1) * sizeof(char));
-}
-
-size_t	ft_nb_row (char const *s, char c)
-{
-	size_t	count;
-	int		index;
-
-	index = 0;
-	count = 0;
-	while (s[index] == c)
-		index++;
-	while (s[index] != '\0')
-	{
-		if (s[index] == c)
-		{
-			while (s[index] == c)
-				index++;
-			count++;
-		}
-		index++;
-	}
-	if (s[0] != c)
-		count++;
-	return (count);
 }
 
 char	**ft_split(char const *s, char c)
 {
-	char	**array;
-	size_t	count;
+	char			**tab;
+	char			*next_str;
+	unsigned int	next_str_len;
+	unsigned int	i;
 
 	if (!s)
 		return (NULL);
-	count = ft_nb_row(s, c);
-	array = malloc (sizeof(char *) * (count + 1));
-	if (array == NULL)
+	tab = (char **)malloc(sizeof(char *) * (ft_get_nb_strs(s, c) + 1));
+	if (!tab)
 		return (NULL);
-	ft_assing_malloc(s, c, array);
-	if (!array)
-		return (ft_free(array));
-	ft_fill(s, c, array, count);
-	return (array);
+	i = 0;
+	next_str = (char *)s;
+	next_str_len = 0;
+	while (i < ft_get_nb_strs(s, c))
+	{
+		ft_get_next_str(&next_str, &next_str_len, c);
+		tab[i] = (char *)malloc(sizeof(char) * (next_str_len + 1));
+		if (!tab[i])
+			return (ft_malloc_error(tab));
+		ft_strlcpy(tab[i], next_str, next_str_len + 1);
+		i++;
+	}
+	tab[i] = NULL;
+	return (tab);
 }

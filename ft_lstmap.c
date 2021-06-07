@@ -1,41 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strnstr.c                                       :+:      :+:    :+:   */
+/*   ft_lstmap.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jcid-gon <jcid-gon@student.42urduliz.com>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/05/27 13:52:28 by jcid-gon          #+#    #+#             */
-/*   Updated: 2021/06/07 10:53:15 by jcid-gon         ###   ########.fr       */
+/*   Created: 2021/06/07 14:10:03 by jcid-gon          #+#    #+#             */
+/*   Updated: 2021/06/07 14:10:04 by jcid-gon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-char	*ft_strnstr(const char *haystack, const char *needle, size_t len)
+t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
 {
-	size_t	index;
-	size_t	jndex;
+	t_list	*new_list;
+	t_list	*ret;
 
-	if (*needle == '\0')
-		return ((char *)haystack);
-	if (len == 0)
+	if (!lst)
 		return (NULL);
-	index = 0;
-	jndex = 0;
-	while (1)
+	new_list = ft_lstnew(f(lst->content));
+	ret = new_list;
+	lst = lst->next;
+	while (lst)
 	{
-		if (needle[jndex] == '\0')
-			return ((char *)(haystack + (index - jndex)));
-		if (haystack[index] == needle[jndex])
-			jndex++;
-		else
+		new_list->next = ft_lstnew(f(lst->content));
+		if (!new_list ->next)
 		{
-			index -= jndex;
-			jndex = 0;
+			ft_lstclear(&new_list, del);
+			return (0);
 		}
-		if (haystack[index] == '\0' || index >= len)
-			return (NULL);
-		index++;
+		new_list = new_list->next;
+		lst = lst->next;
 	}
+	new_list->next = NULL;
+	return (ret);
 }
